@@ -1,104 +1,104 @@
 # 🚗 Commute Tracker
 
-App per tracciare i tempi dei propri spostamenti quotidiani (casa-lavoro-casa) con statistiche e filtri.
+A mobile app to track daily commute times (home-work-home) with statistics and filters.
 
-## 📱 Funzionalità
+## 📱 Features
 
-- ✅ **Tracciamento completo del viaggio**: orari di partenza, arrivo in banchina, arrivo bus, arrivo a destinazione, arrivo finale
-- 📅 **Calendario** per selezionare la data
-- ⏰ **Time picker** per ogni orario
-- 🔄 **Switch Andata/Ritorno** per distinguere i viaggi
-- 📊 **Statistiche**: totale viaggi e tempo medio
-- 🔍 **Filtri**: Tutti, Oggi, Settimana, Mese, Anno
-- 💾 **Database SQLite** locale per salvare i dati
-- 🗑️ **Elimina viaggi** con conferma
-- 📱 **Build APK** per installazione su Android
+- ✅ **Complete trip tracking**: departure time, platform arrival, bus arrival, destination arrival, final arrival
+- 📅 **Calendar** to select dates
+- ⏰ **Time pickers** for each timestamp
+- 🔄 **Outbound/Return switch** to distinguish trips
+- 📊 **Statistics**: total trips and average time
+- 🔍 **Filters**: All, Today, Week, Month, Year
+- 💾 **Local SQLite database** to save data
+- 🗑️ **Delete trips** with confirmation
+- 📱 **APK build** for Android installation
 
-## 🚀 Sviluppo
+## 🚀 Development
 
-### Prerequisiti
+### Prerequisites
 - Node.js 18+
 - Expo CLI
-- Account Expo (per build APK)
+- Expo Account (for APK builds)
 
-### Installazione
+### Installation
 
 ```bash
-# Clona il repository
-git clone https://github.com/[tuo-username]/commute-tracker.git
+# Clone the repository
+git clone https://github.com/[your-username]/commute-tracker.git
 cd commute-tracker
 
-# Installa le dipendenze
+# Install dependencies
 npm install
 
-# Avvia l'app in sviluppo
+# Start the app in development
 npx expo start
 ```
 
-### Sviluppo con Expo Go
-1. Installa [Expo Go](https://expo.dev/go) sul tuo telefono
-2. Scansiona il QR code dal terminale
-3. L'app si aprirà in Expo Go
+### Development with Expo Go
+1. Install [Expo Go](https://expo.dev/go) on your phone
+2. Scan the QR code from the terminal
+3. The app will open in Expo Go
 
-## 📦 Build APK per Android
+## 📦 Build APK for Android
 
-### Setup iniziale
+### Initial Setup
 ```bash
-# Login a Expo
+# Login to Expo
 npx eas-cli login
 
-# Configura EAS Build (già fatto se esiste eas.json)
+# Configure EAS Build (already done if eas.json exists)
 npx eas build:configure
 ```
 
-### Build manuale
+### Manual Build
 ```bash
-# Build preview (consigliato per uso personale)
+# Preview build (recommended for personal use)
 npx eas build -p android --profile preview
 
-# Build production (per pubblicazione)
+# Production build (for publishing)
 npx eas build -p android --profile production
 ```
 
-Il build richiede 10-20 minuti. Riceverai un link per scaricare l'APK.
+The build takes 10-20 minutes. You will receive a link to download the APK.
 
-### Build automatico con GitHub Actions
+### Automated Build with GitHub Actions
 
-Questo repository include un workflow GitHub Actions che builda automaticamente l'APK quando fai push su `main`.
+This repository includes a GitHub Actions workflow that automatically builds the APK when you push to `main`.
 
 **Setup**:
-1. Vai su [Expo Dashboard](https://expo.dev/accounts/[tuo-account]/settings/access-tokens)
-2. Crea un **Access Token**
-3. Vai su GitHub → Settings → Secrets → Actions
-4. Aggiungi un secret chiamato `EXPO_TOKEN` con il token di Expo
-5. Ogni push su `main` triggerera un build automatico!
+1. Go to [Expo Dashboard](https://expo.dev/accounts/[your-account]/settings/access-tokens)
+2. Create an **Access Token**
+3. Go to GitHub → Settings → Secrets → Actions
+4. Add a secret named `EXPO_TOKEN` with your Expo token
+5. Every push to `main` will trigger an automatic build!
 
-## 📂 Struttura del Progetto
+## 📂 Project Structure
 
 ```
 commute-tracker/
 ├── app/
-│   ├── _layout.tsx          # Layout principale con navigazione
-│   ├── index.tsx             # Schermata home con lista e filtri
-│   └── add-commute.tsx       # Schermata per aggiungere viaggio
+│   ├── _layout.tsx          # Main layout with navigation
+│   ├── index.tsx             # Home screen with list and filters
+│   └── add-commute.tsx       # Screen to add new trip
 ├── components/
-│   ├── CommuteForm.js        # Form con time picker
-│   ├── CommuteList.js        # Lista viaggi con timeline
-│   ├── StatsCard.js          # Card statistiche
-│   ├── FilterBar.js          # Barra filtri
-│   └── PeriodIndicator.js    # Indicatore periodo selezionato
+│   ├── CommuteForm.js        # Form with time pickers
+│   ├── CommuteList.js        # Trip list with timeline
+│   ├── StatsCard.js          # Statistics card
+│   ├── FilterBar.js          # Filter bar
+│   └── PeriodIndicator.js    # Selected period indicator
 ├── utils/
-│   └── database.js           # Gestione SQLite
-├── assets/                   # Immagini e icone
-├── eas.json                  # Configurazione EAS Build
+│   └── database.js           # SQLite management
+├── assets/                   # Images and icons
+├── eas.json                  # EAS Build configuration
 └── .github/
     └── workflows/
-        └── eas-build.yml     # GitHub Actions per build automatici
+        └── eas-build.yml     # GitHub Actions for automated builds
 ```
 
 ## 🗃️ Database
 
-L'app usa **SQLite** (`expo-sqlite`) per salvare i dati localmente sul dispositivo.
+The app uses **SQLite** (`expo-sqlite`) to save data locally on the device.
 
 ### Schema
 ```sql
@@ -118,51 +118,47 @@ CREATE TABLE commutes (
 );
 ```
 
-### Funzioni di debug
-Nel codice sono disponibili:
-- `getAllData()` - Visualizza tutti i viaggi salvati
-- `clearAllData()` - Cancella tutti i viaggi (usa con cautela!)
+### Debug Functions
+Available in the code:
+- `getAllData()` - Display all saved trips
+- `clearAllData()` - Delete all trips (use with caution!)
 
 ## 🔄 Git Workflow
 
 ```bash
-# Crea un nuovo branch per feature
-git checkout -b feature/nuova-funzionalita
+# Create a new branch for features
+git checkout -b feature/new-feature
 
-# Fai commit delle modifiche
+# Commit changes
 git add .
-git commit -m "feat: descrizione della modifica"
+git commit -m "feat: description of changes"
 
-# Push sul branch
-git push origin feature/nuova-funzionalita
+# Push to branch
+git push origin feature/new-feature
 
-# Crea una Pull Request su GitHub
-# Dopo il merge su main, il build automatico partirà!
+# Create a Pull Request on GitHub
+# After merging to main, the automatic build will start!
 ```
 
-## 🛠️ Tecnologie
+## 🛠️ Technologies
 
 - **React Native** 0.81.4
 - **Expo** SDK ~54.0.11
-- **Expo Router** ~6.0.9 (navigazione)
-- **Expo SQLite** (database locale)
-- **React Native DateTimePicker** (date e time picker)
-- **Expo Vector Icons** (icone)
-- **EAS Build** (build APK)
+- **Expo Router** ~6.0.9 (navigation)
+- **Expo SQLite** (local database)
+- **React Native DateTimePicker** (date and time pickers)
+- **Expo Vector Icons** (icons)
+- **EAS Build** (APK builds)
 
-## 📝 TODO Future
+## 📝 Future TODO
 
-- [ ] Esportazione dati in CSV/JSON
-- [ ] Grafici per visualizzare andamento tempi
-- [ ] Notifiche per viaggi programmati
+- [ ] Export data to CSV/JSON
+- [ ] Charts to visualize time trends
+- [ ] Notifications for scheduled trips
 - [ ] Dark mode
-- [ ] Sync cloud (opzionale)
-- [ ] Widget per home screen
+- [ ] Cloud sync (optional)
+- [ ] Home screen widget
 
-## 👤 Autore
+## 📄 License
 
-**Melania Blandi** (@giodefa96)
-
-## 📄 Licenza
-
-Progetto personale - Uso privato
+Personal project - Private use
