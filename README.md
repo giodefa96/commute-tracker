@@ -1,50 +1,168 @@
-# Welcome to your Expo app 👋
+# 🚗 Commute Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App per tracciare i tempi dei propri spostamenti quotidiani (casa-lavoro-casa) con statistiche e filtri.
 
-## Get started
+## 📱 Funzionalità
 
-1. Install dependencies
+- ✅ **Tracciamento completo del viaggio**: orari di partenza, arrivo in banchina, arrivo bus, arrivo a destinazione, arrivo finale
+- 📅 **Calendario** per selezionare la data
+- ⏰ **Time picker** per ogni orario
+- 🔄 **Switch Andata/Ritorno** per distinguere i viaggi
+- 📊 **Statistiche**: totale viaggi e tempo medio
+- 🔍 **Filtri**: Tutti, Oggi, Settimana, Mese, Anno
+- 💾 **Database SQLite** locale per salvare i dati
+- 🗑️ **Elimina viaggi** con conferma
+- 📱 **Build APK** per installazione su Android
 
-   ```bash
-   npm install
-   ```
+## 🚀 Sviluppo
 
-2. Start the app
+### Prerequisiti
+- Node.js 18+
+- Expo CLI
+- Account Expo (per build APK)
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Installazione
 
 ```bash
-npm run reset-project
+# Clona il repository
+git clone https://github.com/[tuo-username]/commute-tracker.git
+cd commute-tracker
+
+# Installa le dipendenze
+npm install
+
+# Avvia l'app in sviluppo
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Sviluppo con Expo Go
+1. Installa [Expo Go](https://expo.dev/go) sul tuo telefono
+2. Scansiona il QR code dal terminale
+3. L'app si aprirà in Expo Go
 
-## Learn more
+## 📦 Build APK per Android
 
-To learn more about developing your project with Expo, look at the following resources:
+### Setup iniziale
+```bash
+# Login a Expo
+npx eas-cli login
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Configura EAS Build (già fatto se esiste eas.json)
+npx eas build:configure
+```
 
-## Join the community
+### Build manuale
+```bash
+# Build preview (consigliato per uso personale)
+npx eas build -p android --profile preview
 
-Join our community of developers creating universal apps.
+# Build production (per pubblicazione)
+npx eas build -p android --profile production
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Il build richiede 10-20 minuti. Riceverai un link per scaricare l'APK.
+
+### Build automatico con GitHub Actions
+
+Questo repository include un workflow GitHub Actions che builda automaticamente l'APK quando fai push su `main`.
+
+**Setup**:
+1. Vai su [Expo Dashboard](https://expo.dev/accounts/[tuo-account]/settings/access-tokens)
+2. Crea un **Access Token**
+3. Vai su GitHub → Settings → Secrets → Actions
+4. Aggiungi un secret chiamato `EXPO_TOKEN` con il token di Expo
+5. Ogni push su `main` triggerera un build automatico!
+
+## 📂 Struttura del Progetto
+
+```
+commute-tracker/
+├── app/
+│   ├── _layout.tsx          # Layout principale con navigazione
+│   ├── index.tsx             # Schermata home con lista e filtri
+│   └── add-commute.tsx       # Schermata per aggiungere viaggio
+├── components/
+│   ├── CommuteForm.js        # Form con time picker
+│   ├── CommuteList.js        # Lista viaggi con timeline
+│   ├── StatsCard.js          # Card statistiche
+│   ├── FilterBar.js          # Barra filtri
+│   └── PeriodIndicator.js    # Indicatore periodo selezionato
+├── utils/
+│   └── database.js           # Gestione SQLite
+├── assets/                   # Immagini e icone
+├── eas.json                  # Configurazione EAS Build
+└── .github/
+    └── workflows/
+        └── eas-build.yml     # GitHub Actions per build automatici
+```
+
+## 🗃️ Database
+
+L'app usa **SQLite** (`expo-sqlite`) per salvare i dati localmente sul dispositivo.
+
+### Schema
+```sql
+CREATE TABLE commutes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date TEXT NOT NULL,
+  departureTime TEXT,
+  arrivalPlatformTime TEXT,
+  arrivalBusTime TEXT,
+  arrivalDestinationTime TEXT,
+  finalArrivalTime TEXT,
+  isOutbound INTEGER DEFAULT 1,
+  duration TEXT,
+  transport TEXT,
+  notes TEXT,
+  createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Funzioni di debug
+Nel codice sono disponibili:
+- `getAllData()` - Visualizza tutti i viaggi salvati
+- `clearAllData()` - Cancella tutti i viaggi (usa con cautela!)
+
+## 🔄 Git Workflow
+
+```bash
+# Crea un nuovo branch per feature
+git checkout -b feature/nuova-funzionalita
+
+# Fai commit delle modifiche
+git add .
+git commit -m "feat: descrizione della modifica"
+
+# Push sul branch
+git push origin feature/nuova-funzionalita
+
+# Crea una Pull Request su GitHub
+# Dopo il merge su main, il build automatico partirà!
+```
+
+## 🛠️ Tecnologie
+
+- **React Native** 0.81.4
+- **Expo** SDK ~54.0.11
+- **Expo Router** ~6.0.9 (navigazione)
+- **Expo SQLite** (database locale)
+- **React Native DateTimePicker** (date e time picker)
+- **Expo Vector Icons** (icone)
+- **EAS Build** (build APK)
+
+## 📝 TODO Future
+
+- [ ] Esportazione dati in CSV/JSON
+- [ ] Grafici per visualizzare andamento tempi
+- [ ] Notifiche per viaggi programmati
+- [ ] Dark mode
+- [ ] Sync cloud (opzionale)
+- [ ] Widget per home screen
+
+## 👤 Autore
+
+**Melania Blandi** (@giodefa96)
+
+## 📄 Licenza
+
+Progetto personale - Uso privato

@@ -1,24 +1,34 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { Stack } from "expo-router";
+import { useEffect } from "react";
+import { initDatabase } from "../utils/database";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  // Inizializza il database all'avvio dell'app
+  useEffect(() => {
+    console.log('Inizializzazione database...');
+    try {
+      initDatabase();
+      console.log('Database inizializzato con successo');
+    } catch (error) {
+      console.error('Errore inizializzazione database:', error);
+    }
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack>
+      <Stack.Screen 
+        name="index" 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="add-commute" 
+        options={{ 
+          title: 'Aggiungi Commute',
+          headerStyle: { backgroundColor: '#6366f1' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }} 
+      />
+    </Stack>
   );
 }
