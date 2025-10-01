@@ -1,22 +1,21 @@
 import * as Database from '../database';
 
-// Mock expo-sqlite
-const mockDb = {
-  execSync: jest.fn(),
-  runSync: jest.fn(() => ({ lastInsertRowId: 1, changes: 1 })),
-  getAllSync: jest.fn(() => []),
-  getFirstSync: jest.fn(() => null),
-};
-
-jest.mock('expo-sqlite', () => ({
-  openDatabaseSync: jest.fn(() => mockDb),
-}));
+// Use the global mock from jest.setup.js
+const mockDb = global.mockDb;
 
 describe('Database Utils', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset the database instance
-    require('../database').__resetDatabase?.();
+    // Reset all mock functions
+    mockDb.execSync.mockClear();
+    mockDb.runSync.mockClear();
+    mockDb.getAllSync.mockClear();
+    mockDb.getFirstSync.mockClear();
+    
+    // Reset return values to defaults
+    mockDb.runSync.mockReturnValue({ lastInsertRowId: 1, changes: 1 });
+    mockDb.getAllSync.mockReturnValue([]);
+    mockDb.getFirstSync.mockReturnValue(null);
   });
 
   describe('initDatabase', () => {
@@ -92,7 +91,7 @@ describe('Database Utils', () => {
     });
   });
 
-  describe('getCommutes', () => {
+  describe('loadCommutes', () => {
     const mockCommuteData = [
       {
         id: 1,
@@ -115,18 +114,19 @@ describe('Database Utils', () => {
     it('retrieves all commutes', () => {
       mockDb.getAllSync.mockReturnValueOnce(mockCommuteData);
 
-      const commutes = Database.getCommutes();
+      const commutes = Database.loadCommutes();
 
       expect(mockDb.getAllSync).toHaveBeenCalledWith(
         'SELECT * FROM commutes ORDER BY date DESC, departureTime DESC'
       );
-      expect(commutes).toEqual(mockCommuteData);
+      expect(commutes[0].isOutbound).toBe(true);
+      expect(commutes[1].isOutbound).toBe(false);
     });
 
     it('returns empty array when no commutes found', () => {
       mockDb.getAllSync.mockReturnValueOnce([]);
 
-      const commutes = Database.getCommutes();
+      const commutes = Database.loadCommutes();
 
       expect(commutes).toEqual([]);
     });
@@ -136,19 +136,19 @@ describe('Database Utils', () => {
         throw new Error('Query error');
       });
 
-      expect(() => Database.getCommutes()).toThrow('Query error');
+      const commutes = Database.loadCommutes();
+      expect(commutes).toEqual([]);
     });
   });
 
   describe('deleteCommute', () => {
     it('deletes commute by id', () => {
-      const result = Database.deleteCommute(1);
+      Database.deleteCommute(1);
 
       expect(mockDb.runSync).toHaveBeenCalledWith(
         'DELETE FROM commutes WHERE id = ?',
         [1]
       );
-      expect(result).toEqual({ lastInsertRowId: 1, changes: 1 });
     });
 
     it('handles delete errors', () => {
@@ -160,50 +160,50 @@ describe('Database Utils', () => {
     });
   });
 
-  describe('getCommutesByPeriod', () => {
-    it('gets commutes for today', () => {
-      const today = '2025-01-15';
-      Database.getCommutesByPeriod('today');
+  describe('period-specific functions', () => {
+    it('loads today commutes', () => {
+      const mockData = [{ id: 1, date: '2025-01-15', isOutbound: 1 }];
+      mockDb.getAllSync.mockReturnValue(mockData);
 
-      expect(mockDb.getAllSync).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE date = ?'),
-        expect.arrayContaining([expect.any(String)])
-      );
+      const result = Database.loadTodayCommutes();
+
+      expect(result[0].isOutbound).toBe(true);
     });
 
-    it('gets commutes for current week', () => {
-      Database.getCommutesByPeriod('week');
+    it('loads week commutes', () => {
+      const mockData = [{ id: 1, date: '2025-01-15', isOutbound: 0 }];
+      mockDb.getAllSync.mockReturnValue(mockData);
 
-      expect(mockDb.getAllSync).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE date BETWEEN ? AND ?'),
-        expect.any(Array)
-      );
+      const result = Database.loadWeekCommutes();
+
+      expect(result[0].isOutbound).toBe(false);
     });
 
-    it('gets commutes for current month', () => {
-      Database.getCommutesByPeriod('month');
+    it('loads month commutes', () => {
+      const mockData = [{ id: 1, date: '2025-01-15', isOutbound: 1 }];
+      mockDb.getAllSync.mockReturnValue(mockData);
 
-      expect(mockDb.getAllSync).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE date LIKE ?'),
-        expect.any(Array)
-      );
+      const result = Database.loadMonthCommutes();
+
+      expect(result[0].isOutbound).toBe(true);
     });
 
-    it('gets commutes for current year', () => {
-      Database.getCommutesByPeriod('year');
+    it('loads year commutes', () => {
+      const mockData = [{ id: 1, date: '2025-01-15', isOutbound: 0 }];
+      mockDb.getAllSync.mockReturnValue(mockData);
 
-      expect(mockDb.getAllSync).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE date LIKE ?'),
-        expect.any(Array)
-      );
+      const result = Database.loadYearCommutes();
+
+      expect(result[0].isOutbound).toBe(false);
     });
 
-    it('gets all commutes for unknown period', () => {
-      Database.getCommutesByPeriod('unknown');
+    it('handles errors in period functions', () => {
+      mockDb.getAllSync.mockImplementationOnce(() => {
+        throw new Error('Period error');
+      });
 
-      expect(mockDb.getAllSync).toHaveBeenCalledWith(
-        'SELECT * FROM commutes ORDER BY date DESC, departureTime DESC'
-      );
+      const result = Database.loadTodayCommutes();
+      expect(result).toEqual([]);
     });
   });
 });

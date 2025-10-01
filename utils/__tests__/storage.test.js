@@ -166,7 +166,7 @@ describe('Storage Utils', () => {
 
       expect(result).toBeUndefined();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error getting all data:',
+        'Error reading data:',
         error
       );
 
@@ -175,9 +175,9 @@ describe('Storage Utils', () => {
     });
   });
 
-  describe('clearData', () => {
+  describe('clearAllData', () => {
     it('clears all commute data', async () => {
-      await Storage.clearData();
+      await Storage.clearAllData();
 
       expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@commutes');
     });
@@ -188,7 +188,7 @@ describe('Storage Utils', () => {
       
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      await Storage.clearData();
+      await Storage.clearAllData();
 
       expect(consoleSpy).toHaveBeenCalledWith('Error clearing data:', error);
 
