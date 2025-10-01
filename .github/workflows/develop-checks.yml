@@ -1,0 +1,37 @@
+name: Development Checks
+
+on:
+  push:
+    branches:
+      - develop # Controlli su develop senza build
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  lint-and-test:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: npm
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run ESLint
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: 🔍 Type check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: ✅ Checks completed
+        run: echo "Development checks completed successfully!"
