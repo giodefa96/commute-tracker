@@ -1,0 +1,12 @@
+# Test coverage
+coverage/
+
+# Jest cache
+.jest/
+
+# Test snapshots (if using snapshot testing)
+**/__tests__/**/*.snap
+
+# Test reports
+test-results/
+junit.xml
