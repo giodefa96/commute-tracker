@@ -194,6 +194,11 @@ git push origin vX.Y.Z
 ## 📝 Future TODO
 
 - [ ] Export data to CSV/JSON
+- [ ] Multiple commute form 
+- [ ] Custom commute form
+- [ ] Step-by-step trip update 
+- [ ] Login form
+- [ ] Gps tracking mode (optional)
 - [ ] Charts to visualize time trends
 - [ ] Notifications for scheduled trips
 - [ ] Dark mode
