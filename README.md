@@ -125,19 +125,60 @@ Available in the code:
 
 ## 🔄 Git Workflow
 
+This project uses a **Git Flow** branching strategy:
+
+- **`main`**: Production-ready code. Every push triggers an automatic APK build.
+- **`develop`**: Development branch. Only runs lint/type checks, no APK builds.
+- **`feature/*`**: Feature branches for new functionality.
+
+**Quick workflow**:
 ```bash
-# Create a new branch for features
+# Daily work on develop (no APK builds)
+git checkout develop
+git pull
+
+# Create feature branch
 git checkout -b feature/new-feature
 
-# Commit changes
-git add .
+# Make changes and commit
 git commit -m "feat: description of changes"
 
-# Push to branch
+# Push and create PR to develop
 git push origin feature/new-feature
 
-# Create a Pull Request on GitHub
-# After merging to main, the automatic build will start!
+# When ready for release: merge develop → main
+# This triggers automatic APK build!
+```
+
+📖 **For detailed guides**: 
+- [BRANCHING.md](./BRANCHING.md) - Git workflow details
+- [RELEASES.md](./RELEASES.md) - Version management and releases
+
+## 📦 Release Management
+
+### Version Numbers
+
+Versions are defined in `app.json`:
+- **`version`**: `"1.0.0"` - Semantic versioning (MAJOR.MINOR.PATCH)
+- **`android.versionCode`**: `1` - Integer, must increment for each release
+
+### Quick Version Bump
+
+```bash
+# Bump version automatically
+./scripts/bump-version.sh patch   # 1.0.0 → 1.0.1 (bug fixes)
+./scripts/bump-version.sh minor   # 1.0.0 → 1.1.0 (new features)
+./scripts/bump-version.sh major   # 1.0.0 → 2.0.0 (breaking changes)
+
+# Commit and merge to main
+git commit -am "chore: bump version to X.Y.Z"
+git checkout main
+git merge develop
+git push origin main  # ← Triggers APK build!
+
+# Tag the release
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin vX.Y.Z
 ```
 
 ## 🛠️ Technologies
@@ -153,6 +194,11 @@ git push origin feature/new-feature
 ## 📝 Future TODO
 
 - [ ] Export data to CSV/JSON
+- [ ] Multiple commute form 
+- [ ] Custom commute form
+- [ ] Step-by-step trip update 
+- [ ] Login form
+- [ ] Gps tracking mode (optional)
 - [ ] Charts to visualize time trends
 - [ ] Notifications for scheduled trips
 - [ ] Dark mode

@@ -3,8 +3,10 @@ name: EAS Build
 on:
   push:
     branches:
-      - main
-      - master
+      - main # Build automatico solo su main (production)
+  pull_request:
+    branches:
+      - main # Test quando crei PR verso main
   workflow_dispatch: # Permette di triggerare manualmente dalla UI di GitHub
 
 jobs:

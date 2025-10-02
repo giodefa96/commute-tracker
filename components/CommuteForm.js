@@ -1,5 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useState } from 'react';
+import { Picker } from '@react-native-picker/picker';
+import { useEffect, useState } from 'react';
 import {
     Alert,
     Platform,
@@ -10,6 +11,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { getDefaultPath, loadPaths } from '../utils/commutePaths';
 
 // Helper per mostrare alert cross-platform
 const showAlert = (title, message) => {
@@ -20,20 +22,74 @@ const showAlert = (title, message) => {
   }
 };
 
-export default function CommuteForm({ onSave, onCancel }) {
-  const [form, setForm] = useState({
-    date: new Date(),
-    departureTime: '',
-    arrivalPlatformTime: '',
-    arrivalBusTime: '',
-    arrivalDestinationTime: '',
-    finalArrivalTime: '',
-    isOutbound: true,
+export default function CommuteForm({ onSave, onCancel, initialData = null, isEditing = false }) {
+  const [paths, setPaths] = useState([]);
+  const [selectedPath, setSelectedPath] = useState(null);
+  const [form, setForm] = useState(() => {
+    if (initialData) {
+      return {
+        date: initialData.date ? new Date(initialData.date) : new Date(),
+        departureTime: initialData.departureTime || '',
+        arrivalPlatformTime: initialData.arrivalPlatformTime || '',
+        arrivalBusTime: initialData.arrivalBusTime || '',
+        arrivalDestinationTime: initialData.arrivalDestinationTime || '',
+        finalArrivalTime: initialData.finalArrivalTime || '',
+        isOutbound: initialData.isOutbound !== undefined ? initialData.isOutbound : true,
+        status: initialData.status || 'completed',
+        pathId: initialData.pathId || null,
+      };
+    }
+    return {
+      date: new Date(),
+      departureTime: '',
+      arrivalPlatformTime: '',
+      arrivalBusTime: '',
+      arrivalDestinationTime: '',
+      finalArrivalTime: '',
+      isOutbound: true,
+      status: 'completed',
+      pathId: null,
+    };
   });
+  
+  // Determina se è una bozza (mostra pulsante "Salva Bozza")
+  const isDraft = initialData?.status === 'draft' || !isEditing;
   
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(null); // null, 'departure', 'platform', etc.
   const [tempTime, setTempTime] = useState(new Date());
+
+  // Carica i percorsi disponibili
+  useEffect(() => {
+    const loadAllPaths = async () => {
+      try {
+        const allPaths = await loadPaths();
+        setPaths(allPaths);
+        
+        if (initialData?.pathId) {
+          // Se stiamo modificando, usa il path già selezionato
+          const existingPath = allPaths.find(p => p.id === initialData.pathId);
+          setSelectedPath(existingPath || null);
+        } else {
+          // Altrimenti usa il path di default
+          const defaultPath = await getDefaultPath();
+          setSelectedPath(defaultPath);
+          if (defaultPath) {
+            setForm(prev => ({ ...prev, pathId: defaultPath.id }));
+          }
+        }
+      } catch (error) {
+        console.error('Errore caricamento percorsi:', error);
+      }
+    };
+    loadAllPaths();
+  }, []);
+
+  const handlePathChange = (pathId) => {
+    const path = paths.find(p => p.id === pathId);
+    setSelectedPath(path || null);
+    setForm(prev => ({ ...prev, pathId: pathId }));
+  };
 
   const calculateDuration = (start, end) => {
     if (!start || !end) return '0h 0m';
@@ -136,10 +192,31 @@ export default function CommuteForm({ onSave, onCancel }) {
     setForm({ ...form, [field]: formatted });
   };
 
-  const handleSave = () => {
-    console.log('handleSave chiamato', form);
+  const handleSave = (saveAsDraft = false) => {
+    console.log('handleSave chiamato', form, 'draft:', saveAsDraft);
     
-    // Validazione campi obbligatori
+    // Se salviamo come bozza, non serve validazione completa
+    if (saveAsDraft) {
+      const draftCommute = {
+        id: Date.now(),
+        date: form.date.toISOString().split('T')[0],
+        departureTime: form.departureTime,
+        arrivalPlatformTime: form.arrivalPlatformTime,
+        arrivalBusTime: form.arrivalBusTime,
+        arrivalDestinationTime: form.arrivalDestinationTime,
+        finalArrivalTime: form.finalArrivalTime,
+        isOutbound: form.isOutbound,
+        duration: calculateDuration(form.departureTime, form.finalArrivalTime),
+        status: 'draft',
+        pathId: form.pathId,
+      };
+      
+      console.log('Salvataggio bozza:', draftCommute);
+      onSave(draftCommute);
+      return;
+    }
+    
+    // Validazione per salvataggio completo
     if (!form.departureTime || !form.finalArrivalTime) {
       showAlert('Errore', 'Inserisci almeno orario di partenza e arrivo finale');
       return;
@@ -176,6 +253,8 @@ export default function CommuteForm({ onSave, onCancel }) {
       finalArrivalTime: form.finalArrivalTime,
       isOutbound: form.isOutbound,
       duration,
+      status: 'completed',
+      pathId: form.pathId,
     };
 
     console.log('Chiamata onSave con:', newCommute);
@@ -190,8 +269,34 @@ export default function CommuteForm({ onSave, onCancel }) {
     }
   };
 
+  const handleSaveDraft = () => {
+    handleSave(true);
+  };
+
   return (
     <ScrollView style={styles.container}>
+      {/* Selezione Percorso */}
+      {paths.length > 0 && (
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Percorso</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={form.pathId}
+              onValueChange={handlePathChange}
+              style={styles.picker}
+            >
+              {paths.map(path => (
+                <Picker.Item 
+                  key={path.id} 
+                  label={`${path.emoji} ${path.name}`} 
+                  value={path.id} 
+                />
+              ))}
+            </Picker>
+          </View>
+        </View>
+      )}
+
       {/* Data */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Data</Text>
@@ -310,14 +415,25 @@ export default function CommuteForm({ onSave, onCancel }) {
         />
       )}
 
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Salva</Text>
-        </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        {/* Mostra "Salva Bozza" se è una nuova commute O se stai modificando una bozza */}
+        {isDraft && (
+          <TouchableOpacity style={styles.draftButton} onPress={handleSaveDraft}>
+            <Text style={styles.draftButtonText}>💾 Salva Bozza</Text>
+          </TouchableOpacity>
+        )}
+        
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.saveButton} onPress={() => handleSave(false)}>
+            <Text style={styles.saveButtonText}>
+              {isEditing ? (isDraft ? 'Completa' : 'Aggiorna') : 'Completa'}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-          <Text style={styles.cancelButtonText}>Annulla</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+            <Text style={styles.cancelButtonText}>Annulla</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -375,6 +491,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#f9fafb',
   },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 10,
+    backgroundColor: '#eef2ff',
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+  },
   dateButton: {
     borderWidth: 1,
     borderColor: '#d1d5db',
@@ -408,11 +534,25 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  buttonContainer: {
+    marginTop: 10,
+    marginBottom: 40,
+  },
+  draftButton: {
+    backgroundColor: '#f59e0b',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  draftButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   buttonRow: {
     flexDirection: 'row',
     gap: 15,
-    marginTop: 10,
-    marginBottom: 40,
   },
   saveButton: {
     flex: 1,

@@ -1,0 +1,209 @@
+import * as Database from '../database';
+
+// Use the global mock from jest.setup.js
+const mockDb = global.mockDb;
+
+describe('Database Utils', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Reset all mock functions
+    mockDb.execSync.mockClear();
+    mockDb.runSync.mockClear();
+    mockDb.getAllSync.mockClear();
+    mockDb.getFirstSync.mockClear();
+    
+    // Reset return values to defaults
+    mockDb.runSync.mockReturnValue({ lastInsertRowId: 1, changes: 1 });
+    mockDb.getAllSync.mockReturnValue([]);
+    mockDb.getFirstSync.mockReturnValue(null);
+  });
+
+  describe('initDatabase', () => {
+    it('creates database and commutes table', () => {
+      Database.initDatabase();
+
+      expect(mockDb.execSync).toHaveBeenCalledWith(
+        expect.stringContaining('CREATE TABLE IF NOT EXISTS commutes')
+      );
+    });
+
+    it('handles database initialization errors', () => {
+      mockDb.execSync.mockImplementationOnce(() => {
+        throw new Error('Database error');
+      });
+
+      expect(() => Database.initDatabase()).toThrow('Database error');
+    });
+  });
+
+  describe('saveCommute', () => {
+    const mockCommute = {
+      date: '2025-01-15',
+      departureTime: '08:00',
+      arrivalPlatformTime: '08:15',
+      arrivalBusTime: '08:20',
+      arrivalDestinationTime: '08:45',
+      finalArrivalTime: '09:00',
+      isOutbound: true,
+      duration: '1h 0m',
+      transport: 'Treno + Bus',
+      notes: 'Test commute'
+    };
+
+    it('saves commute successfully', () => {
+      const result = Database.saveCommute(mockCommute);
+
+      expect(mockDb.runSync).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO commutes'),
+        expect.arrayContaining([
+          mockCommute.date,
+          mockCommute.departureTime,
+          mockCommute.arrivalPlatformTime,
+          mockCommute.arrivalBusTime,
+          mockCommute.arrivalDestinationTime,
+          mockCommute.finalArrivalTime,
+          1, // isOutbound converted to integer
+          mockCommute.duration,
+          mockCommute.transport,
+          mockCommute.notes
+        ])
+      );
+
+      expect(result).toEqual({ lastInsertRowId: 1, changes: 1 });
+    });
+
+    it('handles save errors', () => {
+      mockDb.runSync.mockImplementationOnce(() => {
+        throw new Error('Save error');
+      });
+
+      expect(() => Database.saveCommute(mockCommute)).toThrow('Save error');
+    });
+
+    it('converts boolean isOutbound to integer', () => {
+      const commuteWithFalseOutbound = { ...mockCommute, isOutbound: false };
+      Database.saveCommute(commuteWithFalseOutbound);
+
+      expect(mockDb.runSync).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.arrayContaining([0]) // false should be converted to 0
+      );
+    });
+  });
+
+  describe('loadCommutes', () => {
+    const mockCommuteData = [
+      {
+        id: 1,
+        date: '2025-01-15',
+        departureTime: '08:00',
+        finalArrivalTime: '09:00',
+        isOutbound: 1,
+        duration: '1h 0m'
+      },
+      {
+        id: 2,
+        date: '2025-01-16',
+        departureTime: '17:30',
+        finalArrivalTime: '18:30',
+        isOutbound: 0,
+        duration: '1h 0m'
+      }
+    ];
+
+    it('retrieves all commutes', () => {
+      mockDb.getAllSync.mockReturnValueOnce(mockCommuteData);
+
+      const commutes = Database.loadCommutes();
+
+      expect(mockDb.getAllSync).toHaveBeenCalledWith(
+        'SELECT * FROM commutes ORDER BY date DESC, departureTime DESC'
+      );
+      expect(commutes[0].isOutbound).toBe(true);
+      expect(commutes[1].isOutbound).toBe(false);
+    });
+
+    it('returns empty array when no commutes found', () => {
+      mockDb.getAllSync.mockReturnValueOnce([]);
+
+      const commutes = Database.loadCommutes();
+
+      expect(commutes).toEqual([]);
+    });
+
+    it('handles database query errors', () => {
+      mockDb.getAllSync.mockImplementationOnce(() => {
+        throw new Error('Query error');
+      });
+
+      const commutes = Database.loadCommutes();
+      expect(commutes).toEqual([]);
+    });
+  });
+
+  describe('deleteCommute', () => {
+    it('deletes commute by id', () => {
+      Database.deleteCommute(1);
+
+      expect(mockDb.runSync).toHaveBeenCalledWith(
+        'DELETE FROM commutes WHERE id = ?',
+        [1]
+      );
+    });
+
+    it('handles delete errors', () => {
+      mockDb.runSync.mockImplementationOnce(() => {
+        throw new Error('Delete error');
+      });
+
+      expect(() => Database.deleteCommute(1)).toThrow('Delete error');
+    });
+  });
+
+  describe('period-specific functions', () => {
+    it('loads today commutes', () => {
+      const mockData = [{ id: 1, date: '2025-01-15', isOutbound: 1 }];
+      mockDb.getAllSync.mockReturnValue(mockData);
+
+      const result = Database.loadTodayCommutes();
+
+      expect(result[0].isOutbound).toBe(true);
+    });
+
+    it('loads week commutes', () => {
+      const mockData = [{ id: 1, date: '2025-01-15', isOutbound: 0 }];
+      mockDb.getAllSync.mockReturnValue(mockData);
+
+      const result = Database.loadWeekCommutes();
+
+      expect(result[0].isOutbound).toBe(false);
+    });
+
+    it('loads month commutes', () => {
+      const mockData = [{ id: 1, date: '2025-01-15', isOutbound: 1 }];
+      mockDb.getAllSync.mockReturnValue(mockData);
+
+      const result = Database.loadMonthCommutes();
+
+      expect(result[0].isOutbound).toBe(true);
+    });
+
+    it('loads year commutes', () => {
+      const mockData = [{ id: 1, date: '2025-01-15', isOutbound: 0 }];
+      mockDb.getAllSync.mockReturnValue(mockData);
+
+      const result = Database.loadYearCommutes();
+
+      expect(result[0].isOutbound).toBe(false);
+    });
+
+    it('handles errors in period functions', () => {
+      mockDb.getAllSync.mockImplementationOnce(() => {
+        throw new Error('Period error');
+      });
+
+      const result = Database.loadTodayCommutes();
+      expect(result).toEqual([]);
+    });
+  });
+});
