@@ -2,25 +2,27 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import CommuteList from '../components/CommuteList';
 import FilterBar from '../components/FilterBar';
 import PeriodIndicator from '../components/PeriodIndicator';
 import StatsCard from '../components/StatsCard';
+import { getCurrentUser, logout } from '../utils/auth';
 import {
-  deleteCommute,
-  getAllData,
-  loadCommutes,
-  loadMonthCommutes,
-  loadTodayCommutes,
-  loadWeekCommutes,
-  loadYearCommutes
+    deleteCommute,
+    getAllData,
+    loadCommutes,
+    loadMonthCommutes,
+    loadTodayCommutes,
+    loadWeekCommutes,
+    loadYearCommutes
 } from '../utils/database';
 
 export default function Index() {
@@ -28,6 +30,7 @@ export default function Index() {
   const [commutes, setCommutes] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentFilter, setCurrentFilter] = useState('all');
+  const [username, setUsername] = useState('');
 
   const loadData = () => {
     console.log('Caricamento dati con filtro:', currentFilter);
@@ -59,6 +62,17 @@ export default function Index() {
     console.log('Cambio filtro:', filter);
     setCurrentFilter(filter);
   };
+
+  // Carica i dati dell'utente
+  useEffect(() => {
+    const loadUserData = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        setUsername(user.username);
+      }
+    };
+    loadUserData();
+  }, []);
 
   // Ricarica quando cambia il filtro
   useEffect(() => {
@@ -96,12 +110,47 @@ export default function Index() {
     alert('Controlla la console per vedere i dati');
   };
 
+  // Gestione logout
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Sei sicuro di voler uscire?',
+      [
+        {
+          text: 'Annulla',
+          style: 'cancel',
+        },
+        {
+          text: 'Esci',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/login');
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.title}>🚗 Commute Tracker</Text>
-          <Text style={styles.subtitle}>I tuoi spostamenti giornalieri</Text>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.title}>🚗 Commute Tracker</Text>
+              <Text style={styles.subtitle}>I tuoi spostamenti giornalieri</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Text style={styles.logoutButtonText}>Esci</Text>
+            </TouchableOpacity>
+          </View>
+          {username ? (
+            <Text style={styles.welcomeText}>Ciao, {username}! 👋</Text>
+          ) : null}
         </View>
 
         <FilterBar 
@@ -155,6 +204,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -164,6 +218,23 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
+  },
+  welcomeText: {
+    fontSize: 14,
+    color: '#6366f1',
+    fontWeight: '600',
+    marginTop: 12,
+  },
+  logoutButton: {
+    backgroundColor: '#ef4444',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   addButton: {
     backgroundColor: '#6366f1',
