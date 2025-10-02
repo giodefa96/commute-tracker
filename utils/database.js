@@ -73,6 +73,19 @@ export const initDatabase = () => {
       console.log('Colonna updatedAt già esistente');
     }
     
+    // Aggiungi colonna pathId se non esiste
+    const hasPathId = tableInfo.some(col => col.name === 'pathId');
+    if (!hasPathId) {
+      try {
+        database.execSync(`ALTER TABLE commutes ADD COLUMN pathId TEXT`);
+        console.log('Colonna pathId aggiunta con successo');
+      } catch (e) {
+        console.error('Errore aggiunta colonna pathId:', e);
+      }
+    } else {
+      console.log('Colonna pathId già esistente');
+    }
+    
     console.log('Database inizializzato con successo');
   } catch (error) {
     console.error('Errore inizializzazione database:', error);
@@ -85,10 +98,11 @@ export const saveCommute = (commute) => {
   try {
     const database = getDatabase();
     
-    // Verifica se le colonne status e updatedAt esistono
+    // Verifica se le colonne esistono
     const tableInfo = database.getAllSync("PRAGMA table_info(commutes)");
     const hasStatus = tableInfo.some(col => col.name === 'status');
     const hasUpdatedAt = tableInfo.some(col => col.name === 'updatedAt');
+    const hasPathId = tableInfo.some(col => col.name === 'pathId');
     
     const status = commute.status || 'completed';
     
@@ -119,6 +133,12 @@ export const saveCommute = (commute) => {
       placeholders += ', CURRENT_TIMESTAMP';
     }
     
+    if (hasPathId) {
+      columns += ', pathId';
+      placeholders += ', ?';
+      params.push(commute.pathId || null);
+    }
+    
     columns += ')';
     placeholders += ')';
     
@@ -138,10 +158,11 @@ export const updateCommute = (id, commute) => {
   try {
     const database = getDatabase();
     
-    // Verifica se le colonne status e updatedAt esistono
+    // Verifica se le colonne esistono
     const tableInfo = database.getAllSync("PRAGMA table_info(commutes)");
     const hasStatus = tableInfo.some(col => col.name === 'status');
     const hasUpdatedAt = tableInfo.some(col => col.name === 'updatedAt');
+    const hasPathId = tableInfo.some(col => col.name === 'pathId');
     
     // Costruisci la query in base alle colonne disponibili
     let query = `UPDATE commutes 
@@ -169,6 +190,11 @@ export const updateCommute = (id, commute) => {
     
     if (hasUpdatedAt) {
       query += `, updatedAt = CURRENT_TIMESTAMP`;
+    }
+    
+    if (hasPathId) {
+      query += `, pathId = ?`;
+      params.push(commute.pathId || null);
     }
     
     query += ` WHERE id = ?`;

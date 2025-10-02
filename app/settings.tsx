@@ -129,6 +129,22 @@ export default function Settings() {
           )}
         </View>
 
+        {/* Sezione Percorsi */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Percorsi</Text>
+          
+          <TouchableOpacity 
+            style={styles.item} 
+            onPress={() => router.push('/manage-paths')}
+          >
+            <View style={styles.itemLeft}>
+              <Ionicons name="map-outline" size={24} color="#6366f1" />
+              <Text style={styles.itemText}>Gestisci Percorsi</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+          </TouchableOpacity>
+        </View>
+
         {/* Sezione Account */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>

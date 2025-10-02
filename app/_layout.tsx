@@ -1,6 +1,7 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { isAuthenticated } from "../utils/auth";
+import { isSetupDone } from "../utils/commutePaths";
 import { initDatabase } from "../utils/database";
 
 export default function RootLayout() {
@@ -26,13 +27,26 @@ export default function RootLayout() {
       setIsAuthChecked(true);
 
       const inAuthGroup = segments[0] === 'login' || segments[0] === 'register';
+      const inSetupPath = segments[0] === 'setup-paths';
 
       if (!authenticated && !inAuthGroup) {
         // Non autenticato e non nella schermata di login/register -> vai al login
         router.replace('/login');
       } else if (authenticated && inAuthGroup) {
-        // Autenticato ma nella schermata di login/register -> vai alla home
-        router.replace('/');
+        // Autenticato ma nella schermata di login/register
+        // Controlla se ha completato il setup dei percorsi
+        const setupComplete = await isSetupDone();
+        if (!setupComplete) {
+          router.replace('/setup-paths');
+        } else {
+          router.replace('/');
+        }
+      } else if (authenticated && !inSetupPath) {
+        // Autenticato e non nella pagina di setup -> controlla se deve fare il setup
+        const setupComplete = await isSetupDone();
+        if (!setupComplete && segments[0] !== undefined) {
+          router.replace('/setup-paths');
+        }
       }
     };
 
@@ -85,6 +99,21 @@ export default function RootLayout() {
         name="settings" 
         options={{ 
           title: 'Impostazioni',
+          headerStyle: { backgroundColor: '#6366f1' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }} 
+      />
+      <Stack.Screen 
+        name="setup-paths" 
+        options={{ 
+          headerShown: false,
+        }} 
+      />
+      <Stack.Screen 
+        name="manage-paths" 
+        options={{ 
+          title: 'Gestisci Percorsi',
           headerStyle: { backgroundColor: '#6366f1' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },

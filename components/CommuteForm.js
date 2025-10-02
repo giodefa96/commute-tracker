@@ -1,5 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useState } from 'react';
+import { Picker } from '@react-native-picker/picker';
+import { useEffect, useState } from 'react';
 import {
     Alert,
     Platform,
@@ -10,6 +11,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { getDefaultPath, loadPaths } from '../utils/commutePaths';
 
 // Helper per mostrare alert cross-platform
 const showAlert = (title, message) => {
@@ -21,6 +23,8 @@ const showAlert = (title, message) => {
 };
 
 export default function CommuteForm({ onSave, onCancel, initialData = null, isEditing = false }) {
+  const [paths, setPaths] = useState([]);
+  const [selectedPath, setSelectedPath] = useState(null);
   const [form, setForm] = useState(() => {
     if (initialData) {
       return {
@@ -32,6 +36,7 @@ export default function CommuteForm({ onSave, onCancel, initialData = null, isEd
         finalArrivalTime: initialData.finalArrivalTime || '',
         isOutbound: initialData.isOutbound !== undefined ? initialData.isOutbound : true,
         status: initialData.status || 'completed',
+        pathId: initialData.pathId || null,
       };
     }
     return {
@@ -43,6 +48,7 @@ export default function CommuteForm({ onSave, onCancel, initialData = null, isEd
       finalArrivalTime: '',
       isOutbound: true,
       status: 'completed',
+      pathId: null,
     };
   });
   
@@ -52,6 +58,38 @@ export default function CommuteForm({ onSave, onCancel, initialData = null, isEd
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(null); // null, 'departure', 'platform', etc.
   const [tempTime, setTempTime] = useState(new Date());
+
+  // Carica i percorsi disponibili
+  useEffect(() => {
+    const loadAllPaths = async () => {
+      try {
+        const allPaths = await loadPaths();
+        setPaths(allPaths);
+        
+        if (initialData?.pathId) {
+          // Se stiamo modificando, usa il path già selezionato
+          const existingPath = allPaths.find(p => p.id === initialData.pathId);
+          setSelectedPath(existingPath || null);
+        } else {
+          // Altrimenti usa il path di default
+          const defaultPath = await getDefaultPath();
+          setSelectedPath(defaultPath);
+          if (defaultPath) {
+            setForm(prev => ({ ...prev, pathId: defaultPath.id }));
+          }
+        }
+      } catch (error) {
+        console.error('Errore caricamento percorsi:', error);
+      }
+    };
+    loadAllPaths();
+  }, []);
+
+  const handlePathChange = (pathId) => {
+    const path = paths.find(p => p.id === pathId);
+    setSelectedPath(path || null);
+    setForm(prev => ({ ...prev, pathId: pathId }));
+  };
 
   const calculateDuration = (start, end) => {
     if (!start || !end) return '0h 0m';
@@ -170,6 +208,7 @@ export default function CommuteForm({ onSave, onCancel, initialData = null, isEd
         isOutbound: form.isOutbound,
         duration: calculateDuration(form.departureTime, form.finalArrivalTime),
         status: 'draft',
+        pathId: form.pathId,
       };
       
       console.log('Salvataggio bozza:', draftCommute);
@@ -215,6 +254,7 @@ export default function CommuteForm({ onSave, onCancel, initialData = null, isEd
       isOutbound: form.isOutbound,
       duration,
       status: 'completed',
+      pathId: form.pathId,
     };
 
     console.log('Chiamata onSave con:', newCommute);
@@ -235,6 +275,28 @@ export default function CommuteForm({ onSave, onCancel, initialData = null, isEd
 
   return (
     <ScrollView style={styles.container}>
+      {/* Selezione Percorso */}
+      {paths.length > 0 && (
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Percorso</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={form.pathId}
+              onValueChange={handlePathChange}
+              style={styles.picker}
+            >
+              {paths.map(path => (
+                <Picker.Item 
+                  key={path.id} 
+                  label={`${path.emoji} ${path.name}`} 
+                  value={path.id} 
+                />
+              ))}
+            </Picker>
+          </View>
+        </View>
+      )}
+
       {/* Data */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Data</Text>
@@ -428,6 +490,16 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     backgroundColor: '#f9fafb',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 10,
+    backgroundColor: '#eef2ff',
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
   },
   dateButton: {
     borderWidth: 1,
