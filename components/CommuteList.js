@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import {
     Alert,
     Platform,
@@ -10,6 +11,7 @@ import {
 
 export default function CommuteList({ commutes, onDelete }) {
   console.log('CommuteList renderizzato con', commutes.length, 'commutes');
+  const router = useRouter();
   
   const handleDelete = (id) => {
     console.log('CommuteList handleDelete chiamato per id:', id);
@@ -47,6 +49,11 @@ export default function CommuteList({ commutes, onDelete }) {
     }
   };
 
+  const handleEdit = (id) => {
+    console.log('Modifica commute:', id);
+    router.push(`/edit-commute?id=${id}`);
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString + 'T00:00:00');
     return date.toLocaleDateString('it-IT', {
@@ -68,7 +75,10 @@ export default function CommuteList({ commutes, onDelete }) {
   return (
     <View style={styles.container}>
       {commutes.map((commute) => (
-        <View key={commute.id} style={styles.card}>
+        <View key={commute.id} style={[
+          styles.card,
+          commute.status === 'draft' && styles.draftCard
+        ]}>
           <View style={styles.cardContent}>
             <View style={styles.dateRow}>
               <Ionicons name="calendar-outline" size={16} color="#6366f1" />
@@ -78,6 +88,11 @@ export default function CommuteList({ commutes, onDelete }) {
                   {commute.isOutbound ? '➡️ Andata' : '⬅️ Ritorno'}
                 </Text>
               </View>
+              {commute.status === 'draft' && (
+                <View style={styles.draftBadge}>
+                  <Text style={styles.draftText}>📝 Bozza</Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.timeRow}>
@@ -145,12 +160,21 @@ export default function CommuteList({ commutes, onDelete }) {
             )}
           </View>
 
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDelete(commute.id)}
-          >
-            <Ionicons name="trash-outline" size={20} color="#ef4444" />
-          </TouchableOpacity>
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => handleEdit(commute.id)}
+            >
+              <Ionicons name="pencil-outline" size={20} color="#f59e0b" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDelete(commute.id)}
+            >
+              <Ionicons name="trash-outline" size={20} color="#ef4444" />
+            </TouchableOpacity>
+          </View>
         </View>
       ))}
     </View>
@@ -187,8 +211,25 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  draftCard: {
+    backgroundColor: '#fef3c7',
+    borderLeftWidth: 4,
+    borderLeftColor: '#f59e0b',
+  },
   cardContent: {
     flex: 1,
+  },
+  draftBadge: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  draftText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   dateRow: {
     flexDirection: 'row',
@@ -283,6 +324,15 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     fontStyle: 'italic',
     marginTop: 4,
+  },
+  actionsContainer: {
+    flexDirection: 'column',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  editButton: {
+    padding: 8,
+    justifyContent: 'center',
   },
   deleteButton: {
     padding: 8,

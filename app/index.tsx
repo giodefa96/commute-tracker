@@ -1,24 +1,24 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    Alert,
     SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import CommuteList from '../components/CommuteList';
 import FilterBar from '../components/FilterBar';
 import PeriodIndicator from '../components/PeriodIndicator';
 import StatsCard from '../components/StatsCard';
-import { getCurrentUser, logout } from '../utils/auth';
+import { getCurrentUser } from '../utils/auth';
 import {
     deleteCommute,
-    getAllData,
     loadCommutes,
+    loadDraftCommutes,
     loadMonthCommutes,
     loadTodayCommutes,
     loadWeekCommutes,
@@ -28,6 +28,7 @@ import {
 export default function Index() {
   const router = useRouter();
   const [commutes, setCommutes] = useState<any[]>([]);
+  const [draftCommutes, setDraftCommutes] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentFilter, setCurrentFilter] = useState('all');
   const [username, setUsername] = useState('');
@@ -53,8 +54,13 @@ export default function Index() {
         data = loadCommutes();
     }
     
-    console.log('Dati caricati:', data.length, 'commutes');
-    setCommutes(data);
+    // Filtra solo le commute completate
+    const completed = data.filter((c: any) => c.status !== 'draft');
+    const drafts = loadDraftCommutes();
+    
+    console.log('Dati caricati:', completed.length, 'completate,', drafts.length, 'bozze');
+    setCommutes(completed);
+    setDraftCommutes(drafts);
     setRefreshKey(prev => prev + 1); // Forza il re-render
   };
 
@@ -104,34 +110,6 @@ export default function Index() {
     }
   };
 
-  // Funzione di debug per vedere i dati salvati
-  const handleDebugData = () => {
-    const data = getAllData();
-    alert('Controlla la console per vedere i dati');
-  };
-
-  // Gestione logout
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Sei sicuro di voler uscire?',
-      [
-        {
-          text: 'Annulla',
-          style: 'cancel',
-        },
-        {
-          text: 'Esci',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/login');
-          },
-        },
-      ],
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -142,10 +120,10 @@ export default function Index() {
               <Text style={styles.subtitle}>I tuoi spostamenti giornalieri</Text>
             </View>
             <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={handleLogout}
+              style={styles.settingsButton}
+              onPress={() => router.push('/settings')}
             >
-              <Text style={styles.logoutButtonText}>Esci</Text>
+              <Ionicons name="settings-outline" size={28} color="#6366f1" />
             </TouchableOpacity>
           </View>
           {username ? (
@@ -169,14 +147,26 @@ export default function Index() {
           <Text style={styles.addButtonText}>+ Nuovo Commute</Text>
         </TouchableOpacity>
 
-        {/* Bottone Debug - puoi rimuoverlo in produzione */}
-        <TouchableOpacity
-          style={styles.debugButton}
-          onPress={handleDebugData}
-        >
-          <Text style={styles.debugButtonText}>🔍 Debug: Mostra dati salvati</Text>
-        </TouchableOpacity>
+        {/* Sezione Bozze */}
+        {draftCommutes.length > 0 && (
+          <View style={styles.draftSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>📝 Da Completare ({draftCommutes.length})</Text>
+              <Text style={styles.sectionSubtitle}>
+                Clicca sulla matita per completare le informazioni
+              </Text>
+            </View>
+            <CommuteList commutes={draftCommutes} onDelete={handleDelete} key={`drafts-${refreshKey}`} />
+          </View>
+        )}
 
+        {/* Sezione Commute Completate */}
+        {commutes.length > 0 && (
+          <View style={styles.completedSection}>
+            <Text style={styles.sectionTitle}>✅ Completate</Text>
+          </View>
+        )}
+        
         <CommuteList commutes={commutes} onDelete={handleDelete} key={`list-${refreshKey}`} />
       </ScrollView>
     </SafeAreaView>
@@ -225,6 +215,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 12,
   },
+  settingsButton: {
+    padding: 8,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   logoutButton: {
     backgroundColor: '#ef4444',
     paddingVertical: 8,
@@ -253,17 +250,27 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  debugButton: {
-    backgroundColor: '#f59e0b',
-    padding: 12,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 10,
-    alignItems: 'center',
+  draftSection: {
+    marginTop: 10,
+    marginBottom: 20,
   },
-  debugButtonText: {
-    color: '#fff',
+  completedSection: {
+    marginTop: 10,
+    marginBottom: 10,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
     fontSize: 14,
-    fontWeight: '600',
+    color: '#6b7280',
   },
 });

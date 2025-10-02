@@ -17,6 +17,8 @@ const getDatabase = () => {
 export const initDatabase = () => {
   try {
     const database = getDatabase();
+    
+    // Crea la tabella se non esiste
     database.execSync(`
       CREATE TABLE IF NOT EXISTS commutes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,6 +35,44 @@ export const initDatabase = () => {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    
+    // Verifica se la colonna status esiste
+    const tableInfo = database.getAllSync("PRAGMA table_info(commutes)");
+    const hasStatus = tableInfo.some(col => col.name === 'status');
+    const hasUpdatedAt = tableInfo.some(col => col.name === 'updatedAt');
+    
+    // Aggiungi colonna status se non esiste (per migrare DB esistenti)
+    if (!hasStatus) {
+      try {
+        database.execSync(`ALTER TABLE commutes ADD COLUMN status TEXT DEFAULT 'completed'`);
+        console.log('Colonna status aggiunta con successo');
+        
+        // Aggiorna tutti i record esistenti per avere status = 'completed'
+        database.execSync(`UPDATE commutes SET status = 'completed' WHERE status IS NULL`);
+        console.log('Status impostato per tutti i record esistenti');
+      } catch (e) {
+        console.error('Errore aggiunta colonna status:', e);
+      }
+    } else {
+      console.log('Colonna status già esistente');
+    }
+    
+    // Aggiungi colonna updatedAt se non esiste
+    if (!hasUpdatedAt) {
+      try {
+        database.execSync(`ALTER TABLE commutes ADD COLUMN updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP`);
+        console.log('Colonna updatedAt aggiunta con successo');
+        
+        // Aggiorna tutti i record esistenti per avere updatedAt = createdAt
+        database.execSync(`UPDATE commutes SET updatedAt = createdAt WHERE updatedAt IS NULL`);
+        console.log('UpdatedAt impostato per tutti i record esistenti');
+      } catch (e) {
+        console.error('Errore aggiunta colonna updatedAt:', e);
+      }
+    } else {
+      console.log('Colonna updatedAt già esistente');
+    }
+    
     console.log('Database inizializzato con successo');
   } catch (error) {
     console.error('Errore inizializzazione database:', error);
@@ -44,29 +84,120 @@ export const initDatabase = () => {
 export const saveCommute = (commute) => {
   try {
     const database = getDatabase();
-    const result = database.runSync(
-      `INSERT INTO commutes 
-       (date, departureTime, arrivalPlatformTime, arrivalBusTime, 
-        arrivalDestinationTime, finalArrivalTime, isOutbound, duration, transport, notes) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        commute.date,
-        commute.departureTime || null,
-        commute.arrivalPlatformTime || null,
-        commute.arrivalBusTime || null,
-        commute.arrivalDestinationTime || null,
-        commute.finalArrivalTime || null,
-        commute.isOutbound ? 1 : 0,
-        commute.duration || null,
-        commute.transport || null,
-        commute.notes || null,
-      ]
-    );
+    
+    // Verifica se le colonne status e updatedAt esistono
+    const tableInfo = database.getAllSync("PRAGMA table_info(commutes)");
+    const hasStatus = tableInfo.some(col => col.name === 'status');
+    const hasUpdatedAt = tableInfo.some(col => col.name === 'updatedAt');
+    
+    const status = commute.status || 'completed';
+    
+    // Costruisci la query in base alle colonne disponibili
+    let columns = '(date, departureTime, arrivalPlatformTime, arrivalBusTime, arrivalDestinationTime, finalArrivalTime, isOutbound, duration, transport, notes';
+    let placeholders = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?';
+    const params = [
+      commute.date,
+      commute.departureTime || null,
+      commute.arrivalPlatformTime || null,
+      commute.arrivalBusTime || null,
+      commute.arrivalDestinationTime || null,
+      commute.finalArrivalTime || null,
+      commute.isOutbound ? 1 : 0,
+      commute.duration || null,
+      commute.transport || null,
+      commute.notes || null,
+    ];
+    
+    if (hasStatus) {
+      columns += ', status';
+      placeholders += ', ?';
+      params.push(status);
+    }
+    
+    if (hasUpdatedAt) {
+      columns += ', updatedAt';
+      placeholders += ', CURRENT_TIMESTAMP';
+    }
+    
+    columns += ')';
+    placeholders += ')';
+    
+    const query = `INSERT INTO commutes ${columns} VALUES ${placeholders}`;
+    
+    const result = database.runSync(query, params);
     console.log('Commute salvato con ID:', result.lastInsertRowId);
     return result.lastInsertRowId;
   } catch (error) {
     console.error('Errore salvataggio commute:', error);
     throw error;
+  }
+};
+
+// Aggiorna un commute esistente
+export const updateCommute = (id, commute) => {
+  try {
+    const database = getDatabase();
+    
+    // Verifica se le colonne status e updatedAt esistono
+    const tableInfo = database.getAllSync("PRAGMA table_info(commutes)");
+    const hasStatus = tableInfo.some(col => col.name === 'status');
+    const hasUpdatedAt = tableInfo.some(col => col.name === 'updatedAt');
+    
+    // Costruisci la query in base alle colonne disponibili
+    let query = `UPDATE commutes 
+       SET date = ?, departureTime = ?, arrivalPlatformTime = ?, arrivalBusTime = ?,
+           arrivalDestinationTime = ?, finalArrivalTime = ?, isOutbound = ?, 
+           duration = ?, transport = ?, notes = ?`;
+    
+    const params = [
+      commute.date,
+      commute.departureTime || null,
+      commute.arrivalPlatformTime || null,
+      commute.arrivalBusTime || null,
+      commute.arrivalDestinationTime || null,
+      commute.finalArrivalTime || null,
+      commute.isOutbound ? 1 : 0,
+      commute.duration || null,
+      commute.transport || null,
+      commute.notes || null,
+    ];
+    
+    if (hasStatus) {
+      query += `, status = ?`;
+      params.push(commute.status || 'completed');
+    }
+    
+    if (hasUpdatedAt) {
+      query += `, updatedAt = CURRENT_TIMESTAMP`;
+    }
+    
+    query += ` WHERE id = ?`;
+    params.push(id);
+    
+    database.runSync(query, params);
+    console.log('Commute aggiornato:', id);
+    return id;
+  } catch (error) {
+    console.error('Errore aggiornamento commute:', error);
+    throw error;
+  }
+};
+
+// Carica un singolo commute per ID
+export const getCommuteById = (id) => {
+  try {
+    const database = getDatabase();
+    const commute = database.getFirstSync('SELECT * FROM commutes WHERE id = ?', [id]);
+    if (commute) {
+      return {
+        ...commute,
+        isOutbound: commute.isOutbound === 1,
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Errore caricamento commute:', error);
+    return null;
   }
 };
 
@@ -83,6 +214,64 @@ export const loadCommutes = () => {
     }));
   } catch (error) {
     console.error('Errore caricamento commutes:', error);
+    return [];
+  }
+};
+
+// Carica solo le commute complete
+export const loadCompletedCommutes = () => {
+  try {
+    const database = getDatabase();
+    
+    // Verifica se la colonna status esiste prima di fare la query
+    const tableInfo = database.getAllSync("PRAGMA table_info(commutes)");
+    const hasStatus = tableInfo.some(col => col.name === 'status');
+    
+    if (!hasStatus) {
+      console.log('Colonna status non esiste ancora, carico tutte le commute');
+      return loadCommutes();
+    }
+    
+    const commutes = database.getAllSync(
+      "SELECT * FROM commutes WHERE status = 'completed' ORDER BY date DESC, departureTime DESC"
+    );
+    return commutes.map(c => ({
+      ...c,
+      isOutbound: c.isOutbound === 1,
+    }));
+  } catch (error) {
+    console.error('Errore caricamento commutes completate:', error);
+    return [];
+  }
+};
+
+// Carica solo le commute in bozza (draft)
+export const loadDraftCommutes = () => {
+  try {
+    const database = getDatabase();
+    
+    // Verifica se le colonne esistono prima di fare la query
+    const tableInfo = database.getAllSync("PRAGMA table_info(commutes)");
+    const hasStatus = tableInfo.some(col => col.name === 'status');
+    const hasUpdatedAt = tableInfo.some(col => col.name === 'updatedAt');
+    
+    if (!hasStatus) {
+      console.log('Colonna status non esiste ancora, ritorno array vuoto');
+      return [];
+    }
+    
+    // Usa updatedAt se esiste, altrimenti usa createdAt o date
+    const orderBy = hasUpdatedAt ? 'updatedAt DESC' : 'createdAt DESC, date DESC';
+    
+    const commutes = database.getAllSync(
+      `SELECT * FROM commutes WHERE status = 'draft' ORDER BY ${orderBy}`
+    );
+    return commutes.map(c => ({
+      ...c,
+      isOutbound: c.isOutbound === 1,
+    }));
+  } catch (error) {
+    console.error('Errore caricamento bozze:', error);
     return [];
   }
 };

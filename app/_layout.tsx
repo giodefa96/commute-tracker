@@ -72,6 +72,24 @@ export default function RootLayout() {
           headerTitleStyle: { fontWeight: 'bold' },
         }} 
       />
+      <Stack.Screen 
+        name="edit-commute" 
+        options={{ 
+          title: 'Modifica Commute',
+          headerStyle: { backgroundColor: '#f59e0b' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }} 
+      />
+      <Stack.Screen 
+        name="settings" 
+        options={{ 
+          title: 'Impostazioni',
+          headerStyle: { backgroundColor: '#6366f1' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }} 
+      />
     </Stack>
   );
 }

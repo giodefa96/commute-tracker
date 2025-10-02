@@ -20,16 +20,34 @@ const showAlert = (title, message) => {
   }
 };
 
-export default function CommuteForm({ onSave, onCancel }) {
-  const [form, setForm] = useState({
-    date: new Date(),
-    departureTime: '',
-    arrivalPlatformTime: '',
-    arrivalBusTime: '',
-    arrivalDestinationTime: '',
-    finalArrivalTime: '',
-    isOutbound: true,
+export default function CommuteForm({ onSave, onCancel, initialData = null, isEditing = false }) {
+  const [form, setForm] = useState(() => {
+    if (initialData) {
+      return {
+        date: initialData.date ? new Date(initialData.date) : new Date(),
+        departureTime: initialData.departureTime || '',
+        arrivalPlatformTime: initialData.arrivalPlatformTime || '',
+        arrivalBusTime: initialData.arrivalBusTime || '',
+        arrivalDestinationTime: initialData.arrivalDestinationTime || '',
+        finalArrivalTime: initialData.finalArrivalTime || '',
+        isOutbound: initialData.isOutbound !== undefined ? initialData.isOutbound : true,
+        status: initialData.status || 'completed',
+      };
+    }
+    return {
+      date: new Date(),
+      departureTime: '',
+      arrivalPlatformTime: '',
+      arrivalBusTime: '',
+      arrivalDestinationTime: '',
+      finalArrivalTime: '',
+      isOutbound: true,
+      status: 'completed',
+    };
   });
+  
+  // Determina se è una bozza (mostra pulsante "Salva Bozza")
+  const isDraft = initialData?.status === 'draft' || !isEditing;
   
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(null); // null, 'departure', 'platform', etc.
@@ -136,10 +154,30 @@ export default function CommuteForm({ onSave, onCancel }) {
     setForm({ ...form, [field]: formatted });
   };
 
-  const handleSave = () => {
-    console.log('handleSave chiamato', form);
+  const handleSave = (saveAsDraft = false) => {
+    console.log('handleSave chiamato', form, 'draft:', saveAsDraft);
     
-    // Validazione campi obbligatori
+    // Se salviamo come bozza, non serve validazione completa
+    if (saveAsDraft) {
+      const draftCommute = {
+        id: Date.now(),
+        date: form.date.toISOString().split('T')[0],
+        departureTime: form.departureTime,
+        arrivalPlatformTime: form.arrivalPlatformTime,
+        arrivalBusTime: form.arrivalBusTime,
+        arrivalDestinationTime: form.arrivalDestinationTime,
+        finalArrivalTime: form.finalArrivalTime,
+        isOutbound: form.isOutbound,
+        duration: calculateDuration(form.departureTime, form.finalArrivalTime),
+        status: 'draft',
+      };
+      
+      console.log('Salvataggio bozza:', draftCommute);
+      onSave(draftCommute);
+      return;
+    }
+    
+    // Validazione per salvataggio completo
     if (!form.departureTime || !form.finalArrivalTime) {
       showAlert('Errore', 'Inserisci almeno orario di partenza e arrivo finale');
       return;
@@ -176,6 +214,7 @@ export default function CommuteForm({ onSave, onCancel }) {
       finalArrivalTime: form.finalArrivalTime,
       isOutbound: form.isOutbound,
       duration,
+      status: 'completed',
     };
 
     console.log('Chiamata onSave con:', newCommute);
@@ -188,6 +227,10 @@ export default function CommuteForm({ onSave, onCancel }) {
       console.error('Errore durante onSave:', error);
       showAlert('Errore', 'Si è verificato un errore durante il salvataggio');
     }
+  };
+
+  const handleSaveDraft = () => {
+    handleSave(true);
   };
 
   return (
@@ -310,14 +353,25 @@ export default function CommuteForm({ onSave, onCancel }) {
         />
       )}
 
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Salva</Text>
-        </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        {/* Mostra "Salva Bozza" se è una nuova commute O se stai modificando una bozza */}
+        {isDraft && (
+          <TouchableOpacity style={styles.draftButton} onPress={handleSaveDraft}>
+            <Text style={styles.draftButtonText}>💾 Salva Bozza</Text>
+          </TouchableOpacity>
+        )}
+        
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.saveButton} onPress={() => handleSave(false)}>
+            <Text style={styles.saveButtonText}>
+              {isEditing ? (isDraft ? 'Completa' : 'Aggiorna') : 'Completa'}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-          <Text style={styles.cancelButtonText}>Annulla</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+            <Text style={styles.cancelButtonText}>Annulla</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -408,11 +462,25 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  buttonContainer: {
+    marginTop: 10,
+    marginBottom: 40,
+  },
+  draftButton: {
+    backgroundColor: '#f59e0b',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  draftButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   buttonRow: {
     flexDirection: 'row',
     gap: 15,
-    marginTop: 10,
-    marginBottom: 40,
   },
   saveButton: {
     flex: 1,
