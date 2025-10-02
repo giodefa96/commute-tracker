@@ -7,12 +7,14 @@ La tua app ora usa **SQLite** come database locale, integrato direttamente nell'
 ## 🎯 Cos'è cambiato?
 
 ### Prima (AsyncStorage):
+
 - ❌ Storage chiave-valore semplice
 - ❌ Solo stringhe JSON
 - ❌ Nessuna query complessa
 - ❌ Prestazioni limitate con molti dati
 
 ### Ora (SQLite):
+
 - ✅ Database relazionale completo
 - ✅ Query SQL potenti
 - ✅ Indici per performance migliori
@@ -22,6 +24,7 @@ La tua app ora usa **SQLite** come database locale, integrato direttamente nell'
 ## 📂 Dove si trova il database?
 
 Il database `commutes.db` viene creato automaticamente in:
+
 - **Android**: `/data/data/[package-name]/databases/SQLiteDatabaseHelperDB/commutes.db`
 - **iOS**: `~/Library/Application Support/commutes.db`
 - **Web**: IndexedDB (fallback automatico)
@@ -29,24 +32,26 @@ Il database `commutes.db` viene creato automaticamente in:
 ## 🔧 Funzionalità disponibili
 
 ### Funzioni Base:
+
 ```javascript
-import { 
-  initDatabase,      // Inizializza il DB
-  saveCommute,       // Salva un commute
-  loadCommutes,      // Carica tutti i commutes
-  deleteCommute,     // Elimina un commute
+import {
+  initDatabase, // Inizializza il DB
+  saveCommute, // Salva un commute
+  loadCommutes, // Carica tutti i commutes
+  deleteCommute, // Elimina un commute
 } from './utils/database';
 ```
 
 ### Funzioni Avanzate:
+
 ```javascript
-import { 
-  loadCommutesByDateRange,  // Filtra per periodo
-  getStats,                  // Statistiche aggregate
-  getAllData,                // Debug: vedi tutti i dati
-  clearAllData,              // Debug: cancella tutto
-  exportToJSON,              // Esporta backup
-  importFromJSON,            // Importa backup
+import {
+  loadCommutesByDateRange, // Filtra per periodo
+  getStats, // Statistiche aggregate
+  getAllData, // Debug: vedi tutti i dati
+  clearAllData, // Debug: cancella tutto
+  exportToJSON, // Esporta backup
+  importFromJSON, // Importa backup
 } from './utils/database';
 ```
 
@@ -95,6 +100,7 @@ importFromJSON(JSON.stringify(commutes));
 ## 📱 Backup e Ripristino
 
 ### Esporta dati:
+
 ```javascript
 import { exportToJSON } from './utils/database';
 const backup = exportToJSON();
@@ -102,6 +108,7 @@ const backup = exportToJSON();
 ```
 
 ### Importa dati:
+
 ```javascript
 import { importFromJSON } from './utils/database';
 importFromJSON(backupData);

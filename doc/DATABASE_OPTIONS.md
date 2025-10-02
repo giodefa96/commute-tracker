@@ -1,6 +1,7 @@
 # 🗄️ Opzioni Database per Commute Tracker
 
 ## 📊 Situazione Attuale
+
 - **Storage**: AsyncStorage (locale sul dispositivo)
 - **Pro**: Semplice, veloce, nessun setup
 - **Contro**: Dati solo locali, non sincronizzati tra dispositivi
@@ -10,9 +11,11 @@
 ## 🚀 Opzioni per Database Cloud
 
 ### 1. **Supabase** ⭐ (CONSIGLIATO)
+
 **Migliore per**: App piccole-medie, setup veloce
 
 **Pro**:
+
 - PostgreSQL gratuito (fino a 500MB)
 - API REST automatiche
 - Autenticazione integrata
@@ -20,21 +23,23 @@
 - Dashboard web per vedere i dati
 
 **Setup**:
+
 ```bash
 npm install @supabase/supabase-js
 ```
 
 **Esempio codice**:
-```javascript
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient('YOUR_URL', 'YOUR_KEY')
+```javascript
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient('YOUR_URL', 'YOUR_KEY');
 
 // Salvare
-await supabase.from('commutes').insert([newCommute])
+await supabase.from('commutes').insert([newCommute]);
 
 // Caricare
-const { data } = await supabase.from('commutes').select('*')
+const { data } = await supabase.from('commutes').select('*');
 ```
 
 **Link**: https://supabase.com
@@ -42,9 +47,11 @@ const { data } = await supabase.from('commutes').select('*')
 ---
 
 ### 2. **Firebase Firestore** 🔥
+
 **Migliore per**: Google ecosystem, scaling automatico
 
 **Pro**:
+
 - NoSQL flessibile
 - Offline support nativo
 - Real-time sync
@@ -52,6 +59,7 @@ const { data } = await supabase.from('commutes').select('*')
 - Facile autenticazione
 
 **Setup**:
+
 ```bash
 npm install firebase
 ```
@@ -61,15 +69,18 @@ npm install firebase
 ---
 
 ### 3. **Realm (MongoDB)** 📱
+
 **Migliore per**: App mobile-first, offline-first
 
 **Pro**:
+
 - DB locale + cloud sync
 - Ottimo per mobile
 - Queries veloci
 - Sync automatico
 
 **Setup**:
+
 ```bash
 npm install realm
 ```
@@ -79,18 +90,22 @@ npm install realm
 ---
 
 ### 4. **SQLite + Backend Custom** 💪
+
 **Migliore per**: Controllo completo, nessun vendor lock-in
 
 **Pro**:
+
 - Database relazionale locale
 - Puoi creare il tuo backend
 - Massimo controllo
 
 **Contro**:
+
 - Più complesso da configurare
 - Devi gestire il server
 
 **Setup**:
+
 ```bash
 npm install expo-sqlite
 ```
@@ -102,6 +117,7 @@ npm install expo-sqlite
 Per il tuo caso (Commute Tracker), ti consiglio:
 
 ### **Supabase** perché:
+
 1. ✅ Setup in 10 minuti
 2. ✅ Dashboard web per vedere/modificare dati
 3. ✅ Gratuito per iniziare
@@ -109,6 +125,7 @@ Per il tuo caso (Commute Tracker), ti consiglio:
 5. ✅ Puoi aggiungere autenticazione in futuro
 
 ### Come iniziare con Supabase:
+
 1. Vai su https://supabase.com
 2. Crea un account gratuito
 3. Crea un nuovo progetto
