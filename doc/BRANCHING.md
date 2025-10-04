@@ -95,16 +95,19 @@ git branch -d hotfix/descrizione-fix
 ## 🚀 GitHub Actions
 
 ### Su `develop`:
+
 - ✅ Lint check (ESLint)
 - ✅ Type check (TypeScript)
 - ❌ NO build APK
 
 ### Su `main`:
+
 - ✅ Build APK automatico
 - 📦 Link per scaricare APK disponibile dopo ~10-20 minuti
 - 🔔 Notifica quando il build è pronto
 
 ### Manuale (quando vuoi):
+
 - Vai su GitHub → Actions → EAS Build
 - Click su "Run workflow"
 - Scegli il branch e avvia
@@ -112,6 +115,7 @@ git branch -d hotfix/descrizione-fix
 ## 💡 Best Practices
 
 ### Naming Conventions
+
 - **Features**: `feature/add-export-csv`, `feature/dark-mode`
 - **Bug fixes**: `fix/calendar-crash`, `fix/stats-calculation`
 - **Hotfix**: `hotfix/critical-save-bug`
@@ -119,6 +123,7 @@ git branch -d hotfix/descrizione-fix
 - **Docs**: `docs/update-readme`
 
 ### Commit Messages
+
 ```bash
 feat: add export to CSV functionality
 fix: resolve calendar crash on Android
@@ -130,6 +135,7 @@ chore: update dependencies
 ```
 
 ### Pull Requests
+
 1. **Titolo chiaro**: "Add CSV export feature"
 2. **Descrizione**: cosa fa, perché serve, come testarlo
 3. **Screenshots**: se cambi UI
@@ -141,6 +147,7 @@ chore: update dependencies
 ## 🔄 Branch Protection (consigliato)
 
 Su GitHub, proteggi `main`:
+
 1. Settings → Branches → Add rule
 2. Branch name pattern: `main`
 3. Abilita:

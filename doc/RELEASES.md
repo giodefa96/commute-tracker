@@ -7,9 +7,9 @@ The app version is managed in **`app.json`**:
 ```json
 {
   "expo": {
-    "version": "1.0.0",           // User-facing version (Semantic Versioning)
+    "version": "1.0.0", // User-facing version (Semantic Versioning)
     "android": {
-      "versionCode": 1,           // Integer, auto-incremented for Play Store
+      "versionCode": 1, // Integer, auto-incremented for Play Store
       "package": "com.giodefa96.commutetracker"
     }
   }
@@ -25,6 +25,7 @@ Format: `MAJOR.MINOR.PATCH` (e.g., `1.2.3`)
 - **PATCH** (x.x.3): Bug fixes, backward-compatible
 
 **Examples**:
+
 - `1.0.0` → `1.0.1` - Fixed a bug
 - `1.0.1` → `1.1.0` - Added CSV export feature
 - `1.1.0` → `2.0.0` - Redesigned database schema (breaking change)
@@ -39,11 +40,11 @@ Format: `MAJOR.MINOR.PATCH` (e.g., `1.2.3`)
 **Examples**:
 | Version | versionCode | Notes |
 |---------|-------------|-------|
-| 1.0.0   | 1           | Initial release |
-| 1.0.1   | 2           | Bug fix |
-| 1.1.0   | 3           | New feature |
-| 1.1.1   | 4           | Bug fix |
-| 2.0.0   | 5           | Major update |
+| 1.0.0 | 1 | Initial release |
+| 1.0.1 | 2 | Bug fix |
+| 1.1.0 | 3 | New feature |
+| 1.1.1 | 4 | Bug fix |
+| 2.0.0 | 5 | Major update |
 
 ## 🔄 Release Workflow
 
@@ -157,6 +158,7 @@ Use the provided script to automatically bump versions:
 ```
 
 The script automatically:
+
 - ✅ Updates `version` in app.json
 - ✅ Increments `versionCode` in app.json
 - ✅ Shows you the changes
@@ -170,22 +172,27 @@ Keep `CHANGELOG.md` updated following [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+
 - New feature X
 - New feature Y
 
 ### Changed
+
 - Modified behavior of Z
 
 ### Fixed
+
 - Bug fix for A
 
 ## [1.1.0] - 2025-10-15
 
 ### Added
+
 - CSV export functionality
 - Dark mode support
 
 ### Fixed
+
 - Calendar crash on Android
 
 [Unreleased]: https://github.com/giodefa96/commute-tracker/compare/v1.1.0...HEAD
@@ -195,6 +202,7 @@ Keep `CHANGELOG.md` updated following [Keep a Changelog](https://keepachangelog.
 ## 🔔 Build Notifications
 
 After merging to `main`:
+
 1. GitHub Actions triggers EAS Build automatically
 2. Build takes ~10-20 minutes
 3. Check status: https://expo.dev/accounts/giodefa96/projects/commute-tracker/builds
@@ -204,10 +212,12 @@ After merging to `main`:
 ## 📦 Distribution
 
 ### Internal Testing
+
 - Share APK link directly from EAS Build
 - Or download and share APK file via email/Drive
 
 ### Google Play Store (future)
+
 ```bash
 # Build production APK
 eas build -p android --profile production
@@ -218,15 +228,15 @@ eas submit -p android
 
 ## 🎯 Quick Reference
 
-| Action | Command |
-|--------|---------|
-| Bump patch version | `./scripts/bump-version.sh patch` |
-| Bump minor version | `./scripts/bump-version.sh minor` |
-| Bump major version | `./scripts/bump-version.sh major` |
-| Check current version | `grep version app.json` |
-| List all releases | `git tag -l` |
-| View specific release | `git show v1.0.0` |
-| Check build status | `npx eas-cli build:list --limit 5` |
+| Action                | Command                            |
+| --------------------- | ---------------------------------- |
+| Bump patch version    | `./scripts/bump-version.sh patch`  |
+| Bump minor version    | `./scripts/bump-version.sh minor`  |
+| Bump major version    | `./scripts/bump-version.sh major`  |
+| Check current version | `grep version app.json`            |
+| List all releases     | `git tag -l`                       |
+| View specific release | `git show v1.0.0`                  |
+| Check build status    | `npx eas-cli build:list --limit 5` |
 
 ## ⚠️ Important Notes
 

@@ -46,7 +46,9 @@ npm run test:ci
 ## Test Categories
 
 ### Component Tests
+
 Tests for React Native components including:
+
 - **CommuteForm**: Form validation, user interactions, date/time pickers
 - **CommuteList**: List rendering, delete functionality, platform differences
 - **FilterBar**: Filter selection and state management
@@ -54,12 +56,16 @@ Tests for React Native components including:
 - **StatsCard**: Statistics calculation and display
 
 ### Utility Tests
+
 Tests for utility functions:
+
 - **Database**: SQLite operations, CRUD operations, error handling
 - **Storage**: AsyncStorage operations, data persistence, error recovery
 
 ### Screen Tests
+
 Tests for main application screens:
+
 - **Index**: Main screen navigation, data loading, filtering
 - **AddCommute**: Form submission, navigation, error handling
 
@@ -85,16 +91,19 @@ npm test -- --verbose
 ## Test Coverage
 
 The project is configured to collect coverage from:
+
 - `components/**/*.{js,jsx,ts,tsx}`
 - `utils/**/*.{js,jsx,ts,tsx}`
 - `app/**/*.{js,jsx,ts,tsx}`
 
 Coverage reports are generated in multiple formats:
+
 - **Text**: Console output
 - **LCOV**: For CI integration
 - **HTML**: Detailed web report in `coverage/` directory
 
 ### Coverage Thresholds
+
 Currently no specific thresholds are set, but you can add them to `jest.config.js`:
 
 ```javascript
@@ -115,6 +124,7 @@ coverageThreshold: {
 The project includes two GitHub Actions workflows:
 
 #### 1. Main CI Pipeline (`.github/workflows/ci.yml`)
+
 - Runs on push to `main` and `develop` branches
 - Includes multiple jobs:
   - **Test**: Runs full test suite on Node.js 18.x and 20.x
@@ -124,6 +134,7 @@ The project includes two GitHub Actions workflows:
   - **Test Coverage**: Coverage reporting for PRs
 
 #### 2. Test-specific Pipeline (`.github/workflows/test.yml`)
+
 - Runs on code changes
 - Separate jobs for different test categories
 - Provides detailed test summaries
@@ -140,18 +151,21 @@ The project includes two GitHub Actions workflows:
 The test setup includes comprehensive mocking for:
 
 ### React Native Modules
+
 - **AsyncStorage**: For data persistence testing
 - **SQLite**: For database operation testing
 - **Platform**: For cross-platform behavior testing
 - **Alert**: For user interaction testing
 
 ### Expo Modules
+
 - **expo-router**: For navigation testing
 - **expo-sqlite**: For database testing
 - **expo-font**: For font loading
 - **expo-splash-screen**: For app initialization
 
 ### External Libraries
+
 - **DateTimePicker**: For date/time selection
 - **Vector Icons**: For icon rendering
 - **Gesture Handler**: For touch interactions
@@ -177,10 +191,8 @@ describe('YourComponent', () => {
 
   it('handles user interaction', () => {
     const mockCallback = jest.fn();
-    const { getByTestId } = render(
-      <YourComponent onPress={mockCallback} />
-    );
-    
+    const { getByTestId } = render(<YourComponent onPress={mockCallback} />);
+
     fireEvent.press(getByTestId('button'));
     expect(mockCallback).toHaveBeenCalled();
   });
@@ -244,6 +256,7 @@ npm test -- --silent=false
 ## Contributing
 
 When adding new features:
+
 1. Write tests for new components and utilities
 2. Ensure all tests pass before submitting PR
 3. Maintain or improve code coverage
