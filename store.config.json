@@ -1,0 +1,9 @@
+{
+  "configVersion": 0,
+  "apple": {},
+  "android": {
+    "track": "internal",
+    "releaseStatus": "completed",
+    "metadataPath": "./store-metadata/android"
+  }
+}

@@ -1,0 +1,50 @@
+📱 Commute Tracker - Track Your Daily Commute
+
+Keep track of your daily home-work commute times with detailed statistics and smart filters.
+
+✨ Key Features:
+
+🚌 COMPLETE TRACKING
+• Departure time from home
+• Platform/station arrival time
+• Public transport arrival time
+• Destination arrival time
+• Final arrival time
+• Distinguish between outbound and return trips
+
+📊 DETAILED STATISTICS
+• Total number of trips
+• Average commute duration
+• View by selected period
+
+🔍 SMART FILTERS
+• View all trips
+• Today only
+• Last week
+• Last month
+• Last year
+
+💾 DATA ALWAYS AVAILABLE
+• Local SQLite database
+• Your data stays on your device
+• No internet connection required
+• Privacy guaranteed
+
+✏️ COMPLETE MANAGEMENT
+• Add new trips easily
+• Edit existing trips
+• Delete trips with confirmation
+• Intuitive and fast interface
+
+🎨 MODERN DESIGN
+• Clean and professional interface
+• Compatible with light and dark themes
+• Optimized for all Android devices
+
+Perfect for:
+• Commuters who want to monitor travel times
+• Regular public transport users
+• Optimizing departure times
+• Analyzing travel time patterns
+
+Download now and start tracking your commutes!
