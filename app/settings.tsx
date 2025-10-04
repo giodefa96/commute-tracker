@@ -2,14 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import appConfig from '../app.json';
 import { deleteUser, getCurrentUser, logout } from '../utils/auth';
 import { clearAllData, exportToJSON, getAllData } from '../utils/database';
 
@@ -209,7 +210,7 @@ export default function Settings() {
               <Ionicons name="information-circle-outline" size={24} color="#6b7280" />
               <Text style={styles.itemText}>Versione App</Text>
             </View>
-            <Text style={styles.versionText}>1.0.0</Text>
+            <Text style={styles.versionText}>{appConfig.expo.version}</Text>
           </View>
         </View>
 

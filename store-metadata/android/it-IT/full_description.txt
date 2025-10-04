@@ -1,0 +1,50 @@
+📱 Commute Tracker - Traccia i Tuoi Spostamenti
+
+Tieni sotto controllo i tempi dei tuoi spostamenti giornalieri casa-lavoro con statistiche dettagliate e filtri intelligenti.
+
+✨ Caratteristiche principali:
+
+🚌 TRACCIAMENTO COMPLETO
+• Orario di partenza da casa
+• Arrivo alla fermata/stazione
+• Arrivo del mezzo pubblico
+• Arrivo a destinazione
+• Orario finale di arrivo
+• Distinzione tra andata e ritorno
+
+📊 STATISTICHE DETTAGLIATE
+• Numero totale di viaggi
+• Tempo medio di percorrenza
+• Visualizzazione per periodo selezionato
+
+🔍 FILTRI INTELLIGENTI
+• Visualizza tutti i viaggi
+• Solo oggi
+• Ultima settimana
+• Ultimo mese
+• Ultimo anno
+
+💾 DATI SEMPRE DISPONIBILI
+• Database SQLite locale
+• I tuoi dati restano sul tuo dispositivo
+• Nessuna connessione internet richiesta
+• Privacy garantita
+
+✏️ GESTIONE COMPLETA
+• Aggiungi nuovi viaggi facilmente
+• Modifica viaggi esistenti
+• Elimina viaggi con conferma
+• Interfaccia intuitiva e veloce
+
+🎨 DESIGN MODERNO
+• Interfaccia pulita e professionale
+• Compatibile con tema chiaro e scuro
+• Ottimizzata per tutti i dispositivi Android
+
+Perfetta per:
+• Pendolari che vogliono monitorare i tempi di percorrenza
+• Chi usa mezzi pubblici regolarmente
+• Ottimizzare i propri orari di partenza
+• Analizzare pattern nei tempi di viaggio
+
+Scarica ora e inizia a tracciare i tuoi spostamenti!

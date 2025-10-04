@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "commute-tracker",
+    "name": "Commute Tracker",
     "slug": "commute-tracker",
-    "version": "2.0.0",
+    "version": "2.0.1",
+    "description": "Track your daily commute times with detailed statistics and filters. Monitor departure times, platform arrivals, and calculate average commute durations.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "commutetracker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "primaryColor": "#E6F4FE",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.giodefa96.commutetracker"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +24,8 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.giodefa96.commutetracker",
-      "versionCode": 2
+      "versionCode": 3,
+      "permissions": ["VIBRATE"]
     },
     "web": {
       "output": "static",

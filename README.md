@@ -17,6 +17,7 @@ A mobile app to track daily commute times (home-work-home) with statistics and f
 ## 🚀 Development
 
 ### Prerequisites
+
 - Node.js 18+
 - Expo CLI
 - Expo Account (for APK builds)
@@ -36,6 +37,7 @@ npx expo start
 ```
 
 ### Development with Expo Go
+
 1. Install [Expo Go](https://expo.dev/go) on your phone
 2. Scan the QR code from the terminal
 3. The app will open in Expo Go
@@ -43,6 +45,7 @@ npx expo start
 ## 📦 Build APK for Android
 
 ### Initial Setup
+
 ```bash
 # Login to Expo
 npx eas-cli login
@@ -52,21 +55,140 @@ npx eas build:configure
 ```
 
 ### Manual Build
+
 ```bash
 # Preview build (recommended for personal use)
 npx eas build -p android --profile preview
 
-# Production build (for publishing)
+# Production build (for Google Play Store - generates AAB)
 npx eas build -p android --profile production
 ```
 
-The build takes 10-20 minutes. You will receive a link to download the APK.
+The build takes 10-20 minutes. You will receive a link to download the APK/AAB.
+
+## 🏪 Pubblicazione su Google Play Store
+
+### Prerequisiti
+
+1. **Account Google Play Developer** ($25 una tantum)
+2. **Privacy Policy pubblicata online** (vedi `PRIVACY_POLICY.md`)
+3. **Materiali grafici**:
+   - Feature Graphic: 1024x500 px
+   - Screenshot: almeno 2 (min 320px, max 3840px)
+   - Icona: 512x512 px (già presente in `assets/images/icon.png`)
+
+### 1. Pubblica la Privacy Policy
+
+```bash
+# Opzione 1: GitHub Pages
+# Crea un file privacy-policy.html nella root del repository
+# Abilita GitHub Pages nelle impostazioni del repository
+# URL sarà: https://giodefa96.github.io/commute-tracker/privacy-policy.html
+
+# Opzione 2: Usa un servizio gratuito come:
+# - GitHub Gist
+# - Google Sites
+# - Netlify Drop
+```
+
+### 2. Crea il Build per Play Store (AAB)
+
+```bash
+# Build di produzione (genera App Bundle)
+npx eas build -p android --profile production
+
+# Attendi il completamento (10-20 minuti)
+# Scarica il file .aab dal link fornito
+```
+
+### 3. Configura Google Play Console
+
+1. Vai su [play.google.com/console](https://play.google.com/console)
+2. Crea una nuova applicazione
+3. Compila tutti i campi obbligatori:
+
+**Scheda Prodotto**:
+
+- Titolo: Commute Tracker
+- Descrizione breve: (vedi `store-metadata/android/it-IT/short_description.txt`)
+- Descrizione completa: (vedi `store-metadata/android/it-IT/full_description.txt`)
+
+**Grafica**:
+
+- Icona: `assets/images/icon.png` (convertita a 512x512 se necessario)
+- Feature Graphic: da creare (1024x500 px)
+- Screenshot: cattura almeno 2 schermate dall'app
+
+**Categorizzazione**:
+
+- App o gioco: App
+- Categoria: Produttività
+- Tag: pendolari, trasporti, statistiche
+
+**Privacy e sicurezza**:
+
+- Privacy Policy URL: [TUO-URL-PRIVACY-POLICY]
+- Permessi richiesti: VIBRATE (feedback tattile)
+- Sicurezza dei dati: Tutti i dati salvati solo localmente
+
+**Content Rating**:
+
+- Completa il questionario (probabilmente PEGI 3)
+
+**Prezzi e distribuzione**:
+
+- Gratuita
+- Paesi: seleziona i paesi dove distribuire
+
+### 4. Carica l'App Bundle
+
+1. Vai su **Release** > **Produzione**
+2. Clicca **Crea nuova release**
+3. Carica il file `.aab`
+4. Compila le **Note sulla versione**:
+
+```
+Versione 2.0.0
+- Prima release pubblica
+- Tracciamento completo viaggi casa-lavoro
+- Statistiche e filtri intelligenti
+- Database locale per privacy garantita
+```
+
+### 5. Invia per Revisione
+
+1. Completa tutti i campi obbligatori
+2. Clicca **Invia per revisione**
+3. La revisione richiede solitamente 1-7 giorni
+
+### 6. (Opzionale) Automatizza il Submit
+
+```bash
+# Configura il service account per automatizzare i caricamenti
+# Vedi: https://github.com/expo/fyi/blob/main/creating-google-service-account.md
+
+# Una volta configurato, puoi usare:
+npx eas submit -p android --profile production
+```
+
+### Aggiornamenti Futuri
+
+```bash
+# 1. Aggiorna version e versionCode in app.json
+./scripts/bump-version.sh patch  # o minor/major
+
+# 2. Crea nuovo build
+npx eas build -p android --profile production
+
+# 3. Carica su Play Console come aggiornamento
+```
 
 ### Automated Build with GitHub Actions
 
 This repository includes a GitHub Actions workflow that automatically builds the APK when you push to `main`.
 
 **Setup**:
+
 1. Go to [Expo Dashboard](https://expo.dev/accounts/[your-account]/settings/access-tokens)
 2. Create an **Access Token**
 3. Go to GitHub → Settings → Secrets → Actions
@@ -101,6 +223,7 @@ commute-tracker/
 The app uses **SQLite** (`expo-sqlite`) to save data locally on the device.
 
 ### Schema
+
 ```sql
 CREATE TABLE commutes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,7 +242,9 @@ CREATE TABLE commutes (
 ```
 
 ### Debug Functions
+
 Available in the code:
+
 - `getAllData()` - Display all saved trips
 - `clearAllData()` - Delete all trips (use with caution!)
 
@@ -132,6 +257,7 @@ This project uses a **Git Flow** branching strategy:
 - **`feature/*`**: Feature branches for new functionality.
 
 **Quick workflow**:
+
 ```bash
 # Daily work on develop (no APK builds)
 git checkout develop
@@ -150,7 +276,7 @@ git push origin feature/new-feature
 # This triggers automatic APK build!
 ```
 
-📖 **For detailed guides**: 
+📖 **For detailed guides**:
 - [BRANCHING.md](./BRANCHING.md) - Git workflow details
 - [RELEASES.md](./RELEASES.md) - Version management and releases
 
@@ -159,6 +285,7 @@ git push origin feature/new-feature
 ### Version Numbers
 
 Versions are defined in `app.json`:
+
 - **`version`**: `"1.0.0"` - Semantic versioning (MAJOR.MINOR.PATCH)
 - **`android.versionCode`**: `1` - Integer, must increment for each release
 
@@ -194,9 +321,9 @@ git push origin vX.Y.Z
 ## 📝 Future TODO
 
 - [ ] Export data to CSV/JSON
-- [ ] Multiple commute form 
+- [ ] Multiple commute form
 - [ ] Custom commute form
-- [ ] Step-by-step trip update 
+- [ ] Step-by-step trip update
 - [ ] Login form
 - [ ] Gps tracking mode (optional)
 - [ ] Charts to visualize time trends
