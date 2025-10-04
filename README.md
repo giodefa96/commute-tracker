@@ -277,7 +277,6 @@ git push origin feature/new-feature
 ```
 
 📖 **For detailed guides**:
-
 - [BRANCHING.md](./BRANCHING.md) - Git workflow details
 - [RELEASES.md](./RELEASES.md) - Version management and releases
 
